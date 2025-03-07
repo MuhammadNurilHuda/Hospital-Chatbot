@@ -1,113 +1,213 @@
 # [Ongoing...]AI Agents for Hospital Appointment Booking
 
-## Overview
+# Hospital Chatbot Project
 
-This project is an AI-powered chatbot designed to handle hospital appointment bookings efficiently. It leverages **DeepSeek-Self-Manage** for AI agent functionalities, providing features such as:
+Proyek **Hospital Chatbot** bertujuan untuk membangun aplikasi berbasis AI/Chatbot yang membantu pasien memesan janji temu dokter dan memberikan respon percakapan yang lebih interaktif. Aplikasi ini dibangun menggunakan **FastAPI**, **PostgreSQL** (melalui SQLAlchemy), dan mengintegrasikan **DeepSeek API** untuk pemrosesan bahasa alami.
 
-- **Conversational AI** for doctor appointment scheduling.
-- **Session Management** to track and maintain conversation flow.
-- **Conversation Logging & Monitoring** for tracking and auditing interactions.
-- **Bypassing Mechanism** to escalate conversations to human customer service when necessary.
+## 1. Deskripsi Proyek
 
-## Features
+1. **Fokus Utama**
 
-### 1. Conversational AI
+   - Membantu pasien dalam _booking appointment_ dengan dokter.
+   - Menyediakan sistem _logging & monitoring_ untuk setiap percakapan.
+   - Menyimpan riwayat percakapan (prompt & response) di database sebagai _user activity logs_.
+   - Mendukung kelanjutan pengembangan seperti _session management_ (Redis) dan _human escalation_ (CS).
 
-- Handles basic Q&A related to doctor appointments.
-- Guides users through the booking process.
-- Provides relevant hospital and doctor availability information.
+2. **Kegunaan Chatbot**
 
-### 2. Session Management
+   - Menjawab pertanyaan seputar informasi dokter & jadwal.
+   - Memfasilitasi proses pemesanan janji temu (appointment) secara otomatis.
+   - Mencatat detail percakapan untuk keperluan audit, analisis, atau keluhan pasien.
 
-- Tracks session states (open, ongoing, closed).
-- Enables session continuation to prevent redundant conversations.
-- Helps optimize business logic and reduce operational costs.
+3. **Teknologi Utama**
+   - **FastAPI** + Python untuk server API.
+   - **DeepSeek API** (NLP) untuk pemahaman percakapan.
+   - **PostgreSQL** dan **SQLAlchemy ORM** untuk database.
+   - **dotenv (.env)** untuk konfigurasi rahasia (API Key, URL DB).
+   - Rencana **Docker + Kubernetes** untuk produksi.
 
-### 3. Conversation Logging & Monitoring
+---
 
-- Logs user interactions for analysis and auditing.
-- Stores key details of user queries and responses.
-- Provides insights into chatbot performance and potential improvements.
+## 2. Struktur Direktori
 
-### 4. Human Escalation (Bypassing)
+Berikut struktur utama direktori proyek:
 
-- Identifies cases where chatbot should not handle a query.
-- Transfers the conversation with logs to human agents.
-- Ensures a smooth transition by providing past conversation context.
+    AI-Agents-Hospital-Booking/
+    ├── app/
+    │   ├── main.py               # Entry point FastAPI
+    │   ├── chatbot.py            # Modul AI Chatbot (DeepSeek API)
+    │   ├── database.py           # Konfigurasi PostgreSQL & Model DB
+    │   ├── models.py             # (Opsional, jika dipisah)
+    │   ├── logging.py            # Menggunakan logging.conf eksternal
+    │   ├── session.py            # (Planned) Manajemen session (Redis)
+    │   ├── error_handler.py      # (Opsional) Modul penanganan error/exception
+    ├── tests/
+    │   ├── test_main.py          # Test endpoint (root, /chat, /appointment/book)
+    │   ├── test_chatbot.py       # Test chatbot (logika & mock DeepSeek API)
+    │   ├── test_database.py      # Test DB (appointments, user_activity_logs)
+    ├── migrations/               # (Planned) Folder migrasi DB (Alembic)
+    ├── config/                   # (Planned) Konfigurasi (settings, constants)
+    │   ├── settings.py
+    │   ├── constants.py
+    ├── scripts/
+    │   └── init_db.py            # Skrip inisialisasi database
+    ├── logs/                     # Folder file log
+    ├── configs/
+    │   └── logging.conf          # File konfigurasi logging eksternal
+    ├── requirements.txt          # Daftar library Python
+    ├── .env                      # Konfigurasi rahasia (API Key, DB URL)
+    ├── .gitignore                # Daftar file/folder diabaikan oleh Git
+    ├── Dockerfile                # (Planned) Konfigurasi Docker image
+    ├── docker-compose.yml        # (Planned) Orkestrasi Docker container
+    └── README.md                 # Dokumentasi proyek
 
-## Tech Stack
+---
 
-- **Backend:** FastAPI + Uvicorn
-- **AI Framework:** DeepSeek-Self-Manage
-- **Database:** PostgreSQL / MongoDB (for session & log storage)
-- **Logging:** ELK Stack (Elasticsearch, Logstash, Kibana) or alternative
-- **Deployment:** Docker + Kubernetes (optional)
+## 3. Fitur yang Selesai
 
-## Project Structure
+1. **FastAPI + DeepSeek API**
 
-```
-📂 AI-Agents-Hospital-Booking
-├── 📁 src
-│   ├── 📁 agents  # AI agent configurations
-│   ├── 📁 api     # FastAPI routes
-│   ├── 📁 db      # Database connection & models
-│   ├── 📁 logs    # Logging setup
-│   ├── main.py   # Entry point for the app
-├── 📁 configs     # Configuration files
-├── 📁 tests       # Unit & integration tests
-├── 📄 README.md   # Project documentation
-├── 📄 requirements.txt  # Python dependencies
-├── 📄 Dockerfile  # Containerization setup
-```
+   - Endpoint `/chat` memanggil fungsi `get_response` (di `chatbot.py`) untuk memproses percakapan.
+   - Chatbot mendeteksi intent booking melalui kata kunci sederhana, lalu menampilkan instruksi booking.
 
-## Installation
+2. **Database PostgreSQL**
 
-### 1. Clone the Repository
+   - Menggunakan **SQLAlchemy** untuk operasi DB.
+   - Tabel `appointments` (menyimpan data booking dokter) dan `user_activity_logs` (menyimpan riwayat percakapan).
 
-```bash
-git clone https://github.com/yourusername/AI-Agents-Hospital-Booking.git
-cd AI-Agents-Hospital-Booking
-```
+3. **Endpoint `/appointment/book`**
 
-### 2. Create a Virtual Environment
+   - Menerima data booking (nama, telepon, spesialisasi, tanggal).
+   - Menyimpan data ke tabel `appointments`.
 
-```bash
-python -m venv venv
-source venv/bin/activate  # For macOS/Linux
-venv\Scripts\activate    # For Windows
-```
+4. **Logging Dasar**
 
-### 3. Install Dependencies
+   - Memakai `logging.conf` (eksternal) di `configs/logging.conf`.
+   - Memanggil `logging.config.fileConfig(CONFIG_PATH)` di `app/logging.py`.
+   - Log ditulis ke console dan file (misal: `logs/chatbot.log`).
 
-```bash
-pip install -r requirements.txt
-```
+5. **Pengujian (Pytest)**
+   - `test_main.py`: Test endpoint `/`, `/chat`, `/appointment/book`.
+   - `test_chatbot.py`: Test fungsi `get_response`, penggunaan `monkeypatch` untuk mock API eksternal.
+   - `test_database.py`: Test koneksi DB, penyimpanan data di `appointments` & `user_activity_logs`.
+   - Fixture `Base.metadata.create_all` memastikan tabel dibuat sebelum test, `drop_all` setelahnya.
 
-### 4. Run the Application
+---
 
-```bash
-uvicorn src.main:app --reload
-```
+## 4. Sprint Progress
 
-## API Endpoints
+**Sprint 1 - Setup Dasar**
 
-| Method | Endpoint                   | Description              |
-| ------ | -------------------------- | ------------------------ |
-| POST   | `/appointment/book`        | Book a new appointment   |
-| GET    | `/appointment/status/{id}` | Check appointment status |
-| POST   | `/conversation/logs`       | Store conversation logs  |
-| POST   | `/conversation/transfer`   | Escalate to human agent  |
+- Membuat repo, mengatur environment.
+- Endpoint `/chat` + integrasi awal DeepSeek.
+- **Status:** Selesai
 
-## Future Enhancements
+**Sprint 2 - Chatbot Intent Booking**
 
-- Integrate NLP models for better intent recognition.
-- Add authentication and user profile management.
-- Deploy using cloud services (AWS/GCP/Azure).
+- Mendeteksi intent booking vs permintaan info dokter.
+- Chatbot meminta detail booking (nama, jadwal, dsb.).
+- **Status:** Selesai
 
-## Contribution
+**Sprint 3 - DB & Booking**
 
-Feel free to open issues and pull requests to enhance this project! 🚀
+- Setup PostgreSQL & tabel `appointments`.
+- Endpoint `/appointment/book` untuk simpan data.
+- **Status:** Selesai
 
-## License
+**Sprint 4 - Logging & Fallback**
 
-This project is licensed under the MIT License.
+- Log percakapan di `user_activity_logs`.
+- Rencana fallback ke CS jika chatbot gagal merespons.
+- **Status:** In Progress
+
+---
+
+## 5. Rencana Pengembangan
+
+1. **Session Management**
+
+   - Gunakan Redis untuk menyimpan konteks percakapan lintas request.
+
+2. **Logging & Monitoring Terpusat**
+
+   - Integrasi dengan ELK Stack atau Prometheus + Grafana.
+
+3. **Deployment**
+
+   - Dockerfile, docker-compose untuk memudahkan deployment.
+
+4. **Auth & User Management**
+
+   - Tabel `users`, relasi dengan `user_activity_logs` untuk multi-user real.
+
+5. **Fallback ke CS**
+
+   - Alur eskalasi jika chatbot tidak mengenali intent.
+
+6. **NLP Lanjutan**
+   - Menggantikan keyword matching dengan model custom, spaCy, atau transformers.
+
+---
+
+## 6. Cara Menjalankan
+
+1.  **Instal Dependencies**
+
+    ```
+    pip install -r requirements.txt
+    ```
+
+2.  **Konfigurasi Environment**
+
+    - Buat file `.env` isi minimal:
+
+          DEEPSEEK_API_KEY=<key>
+          DATABASE_URL=postgresql://username:password@localhost:5432/hospital_db
+
+3.  **Inisialisasi Database**
+
+    - Pastikan PostgreSQL aktif.
+    - Gunakan `Base.metadata.create_all(bind=engine)` atau jalankan skrip SQL untuk membuat tabel.
+
+4.  **Menjalankan Server**
+
+    ```
+    uvicorn app.main:app --reload
+    ```
+
+    - Akses di `http://127.0.0.1:8000`.
+
+5.  **Testing**
+    ```
+    pytest tests/
+    ```
+    - Jalankan semua test (unit & integration).
+
+---
+
+## 7. Pengujian dengan Postman
+
+1.  **Root Endpoint** (`GET /`)
+    - Response OK `{"message": "Hospital Chatbot API is running!"}`
+2.  **Chat Endpoint** (`POST /chat`)
+    - Body JSON misal: `{"message": "Bagaimana cuaca hari ini?"}`
+    - Periksa response & status code `200`.
+3.  **Booking Endpoint** (`POST /appointment/book`)
+
+    - Body JSON:
+
+          {
+            "name": "John Doe",
+            "phone": "08123456789",
+            "doctor_specialist": "Cardiology",
+            "appointment_date": "2025-03-10"
+          }
+
+    - Status code `200`, response mengandung `"appointment_id"`.
+
+---
+
+## 8. Kontak
+
+- **Nama**: Muhammad Nuril Huda
+- **Email**: muhammadnurilhuda@ugm.ac.id

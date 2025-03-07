@@ -1,7 +1,7 @@
 # tests\test_database.py
 
 import pytest
-from app.database import Base, engine, SessionLocal, Appointment
+from app.database import Base, engine, SessionLocal, Appointment, UserActivityLog
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_database():
@@ -38,32 +38,49 @@ def test_database_connection():
 
 def test_insert_appointment():
     """
-    Menguji operasi insert data ke dalam tabel 'appointments'.
-    
-    Test ini melakukan langkah-langkah sebagai berikut:
-    1. Membuat instance Appointment baru dengan data uji.
-    2. Menambahkan instance tersebut ke session dan melakukan commit.
-    3. Melakukan refresh pada instance untuk mendapatkan nilai-nilai terbaru (misalnya, ID yang dihasilkan).
-    4. Memastikan bahwa:
-       - Data telah tersimpan dengan benar (misalnya, data name, phone, dan doctor_specialist sesuai).
-       - Appointment mendapatkan ID yang berarti telah berhasil disimpan di database.
+    Menguji penyimpanan data ke tabel 'appointments'.
     """
     db = SessionLocal()
     try:
         new_appointment = Appointment(
-            name = "test",
-            phone = "08123456789",
-            doctor_specialist = "test",
-            appointment_date = "2025-03-10"
+            name="Test User",
+            phone="0811111111",
+            doctor_specialist="Test Specialist",
+            appointment_date="2025-05-20"
         )
         db.add(new_appointment)
         db.commit()
         db.refresh(new_appointment)
+        
         assert new_appointment.id is not None
+        saved_appointment = db.query(Appointment).filter_by(id=new_appointment.id).first()
+        assert saved_appointment is not None
+        assert saved_appointment.name == "Test User"
+        assert saved_appointment.doctor_specialist == "Test Specialist"
+    finally:
+        db.close()
 
-        check_appointment = db.query(Appointment).filter_by(id=new_appointment.id).first()
-        assert check_appointment is not None
-        assert check_appointment.name == "test"
-    
+def test_insert_user_activity():
+    """
+    Menguji penyimpanan data ke tabel 'user_activity_logs'.
+    """
+    db = SessionLocal()
+    try:
+        new_log = UserActivityLog(
+            prompt="Halo Dokter, saya sakit apa?",
+            response="Mohon ceritakan gejalanya lebih lengkap."
+        )
+        db.add(new_log)
+        db.commit()
+        db.refresh(new_log)
+        
+        # Pastikan ID-nya terisi, menandakan data berhasil masuk
+        assert new_log.id is not None
+        
+        # Verifikasi data di database
+        stored_log = db.query(UserActivityLog).filter_by(id=new_log.id).first()
+        assert stored_log is not None
+        assert stored_log.prompt == "Halo Dokter, saya sakit apa?"
+        assert stored_log.response == "Mohon ceritakan gejalanya lebih lengkap."
     finally:
         db.close()

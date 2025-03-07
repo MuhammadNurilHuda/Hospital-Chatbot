@@ -3,6 +3,7 @@
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+from app.logging import logger
 
 # Kata kunci booking
 BOOKING_KEYWORDS = ["booking", "buat janji", "reservasi", "pesan dokter"]
@@ -17,11 +18,21 @@ client = OpenAI(
 )
 
 def get_response(user_input: str):
+    logger.info(f"Menerima input dari user: {user_input}")
     if any(keyword in user_input.lower() for keyword in BOOKING_KEYWORDS):
-        return "Tentu! Silakan berikan informasi berikut:\n- Nama Lengkap\n- Nomor HP\n- Spesialis Dokter yang Anda butuhkan\n- Jadwal yang diinginkan"
+        response = "Tentu! Silakan berikan informasi berikut:\n- Nama Lengkap\n- Nomor HP\n- Spesialis Dokter yang Anda butuhkan\n- Jadwal yang diinginkan"
+        logger.debug("Mendeteksi intent booking, memberikan instruksi booking.")
+        return response
 
-    response = client.chat.completions.create(
-        model="deepseek-chat",
-        messages=[{"role": "user", "content": user_input}]
-    )
-    return response.choices[0].message.content
+    try:
+        response_obj = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[{"role": "user", "content": user_input}]
+        )
+        response_text = response_obj.choices[0].message.content
+        logger.debug(f"Respons dari API: {response_text}")
+        return response_text
+
+    except Exception as e:
+        logger.error(e)
+        raise

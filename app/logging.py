@@ -3,10 +3,10 @@
 import logging.config
 import os
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__),'..', 'configs', 'logging.conf')
-
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), '..', 'configs', 'logging.conf')
 logging.config.fileConfig(CONFIG_PATH)
-logger = logging.getLogger('hospital_chatbot')
+
+logger = logging.getLogger("hospital_chatbot")
 
 def log_message(message: str, level: str = "INFO"):
     """

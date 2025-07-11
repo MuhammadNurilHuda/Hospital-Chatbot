@@ -15,7 +15,11 @@ load_dotenv()
 DB_URL = os.getenv("DATABASE_URL")
 logger.info(f"Menghubungkan ke database dengan url: {DB_URL}")
 
-engine = create_engine(DB_URL, echo=True)
+if DB_URL.startswith("sqlite"):
+    engine = create_engine(DB_URL, connect_args={"check_same_thread": False}, echo=True)
+else:
+    engine = create_engine(DB_URL, echo=True)
+
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 

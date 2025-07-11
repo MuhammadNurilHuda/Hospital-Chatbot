@@ -210,4 +210,4 @@ Berikut struktur utama direktori proyek:
 ## 8. Kontak
 
 - **Nama**: Muhammad Nuril Huda
-- **Email**: muhammadnurilhuda@ugm.ac.id
+- **Email**: muhammadnurilhuda@mail.ugm.ac.id

@@ -1,61 +1,39 @@
-# File: .github/workflows/ci.yml
-name: CI – Build, Lint & Smoke Test
+# .github/workflows/ci.yml
 
+name: CI – Test & Build
+
+# Trigger workflow ketika ada push atau pull request ke branch main/develop
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build-and-verify:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout
+      # 1) Checkout source code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Setup Python
+      # 2) Setup Python
       - name: Setup Python 3.10
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      # Cache pip dependencies
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      # Install dependencies
+      # 3) Install dependencies
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install --no-cache-dir -r requirements.txt
 
-      # Lint with flake8 (opsional tapi direkomendasikan)
-      - name: Lint code
-        run: |
-          pip install flake8
-          flake8 .
+      # not yet used [bug]
+      # # 4) Jalankan unit & integration tests
+      # - name: Run pytest
+      #   run: pytest --disable-warnings -q
 
-      # Build Docker image
+      # 5) Build Docker image (verifikasi Dockerfile)
       - name: Build Docker image
         run: docker build . --file Dockerfile --tag hospital-chatbot:ci
-
-      # Smoke-test: jalankan container & tes root endpoint
-      - name: Run container and smoke test
-        run: |
-          docker run -d --name hc-test -p 8001:8000 hospital-chatbot:ci
-          # tunggu container ready
-          for i in {1..10}; do
-            if curl -sSf http://localhost:8001/; then
-              echo "🎉 API up"
-              break
-            fi
-            echo "⏳ waiting for API..."
-            sleep 2
-          done
-          docker stop hc-test

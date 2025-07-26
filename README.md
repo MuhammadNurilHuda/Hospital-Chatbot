@@ -1,4 +1,4 @@
-# [Ongoing...]AI Agents for Hospital Appointment Booking
+# AI Agents for Hospital Appointment Booking
 
 # Hospital Chatbot Project
 

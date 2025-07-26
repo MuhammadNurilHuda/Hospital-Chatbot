@@ -1,6 +1,56 @@
+# Virtual environments
 venv/
+ENV/
+env/
+.venv/
+
+# Environment vars
 .env
-__pycache__
-.pytest_cache
-logs/*
+!.env.example
+
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# pytest cache
+.pytest_cache/
+
+# Logs
+logs/
+*.log
+
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+
+# Packaging / build dist
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Docker
+docker-compose.override.yml
+
+# IDE/project settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Mypy/Pyre
+.mypy_cache/
+.dmypy.json
+.pyre/
+
+# Private data
 note.md

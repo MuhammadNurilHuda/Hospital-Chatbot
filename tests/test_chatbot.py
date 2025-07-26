@@ -1,38 +1,40 @@
 # tests\test_chatbot.py
+"""
+Unit test untuk fungsi `get_response` di app/chatbot.py:
+- Booking intent: langsung mengembalikan instruksi.
+- Non-booking intent: memanggil RAG chain (di-stub) dan mengembalikan jawaban chain.
+"""
 
 import pytest
 from app.chatbot import get_response, BOOKING_KEYWORDS
+from langchain.chains import ConversationalRetrievalChain
 
-def test_get_response():
+def test_get_response_booking_intent():
     """
-    Menguji fungsi get_response ketika input mengandung kata kunci booking.
-    Fungsi seharusnya mengembalikan instruksi untuk mengisi informasi booking.
+    Pastikan jika input mengandung kata kunci booking,
+    fungsi langsung kembalikan instruksi, tanpa memanggil RAG chain.
     """
-    test_message = "Saya ingin reservasi dokter"
-    response = get_response(test_message)
-    assert "Silakan berikan informasi" in response
+    sample = "Saya mau Reservasi dokter gigi"
+    res = get_response(sample, session_id="sess1")
+    assert "Silakan berikan informasi berikut" in res
 
-def test_get_general_response(monkeypatch):
+def test_get_response_rag_chain(monkeypatch):
     """
-    Menguji fungsi get_response untuk input non-booking.
-    Fungsi DeepSeek API asli digantikan dengan dummy_create monkeypatch yang mengembalikan response terkontrol.
+    Untuk input non-booking, stub RAG chain agar mengembalikan jawaban spesifik,
+    lalu pastikan get_response men‐return jawaban itu.
     """
-    test_message = "Apa kabar?"
+    # Buat DummyChain yang selalu return answer tertentu
+    class DummyChain:
+        def __call__(self, inputs):
+            return {"answer": "Dummy RAG reply"}
 
-    # Objek dummy untuk response dari deepseek API
-    class DummyMessage():
-        content = "Ini response dari DeepSeek API..."
+    # Stub from_llm pada class ConversationalRetrievalChain
+    monkeypatch.setattr(
+        ConversationalRetrievalChain,
+        "from_llm",
+        lambda *args, **kwargs: DummyChain()
+    )
 
-    class DummyChoice():
-        message = DummyMessage()
-
-    class DummyResponse():
-        choices = [DummyChoice()]
-    
-    def dummy_create(*args, **kwargs):
-        return DummyResponse()
-
-    monkeypatch.setattr("app.chatbot.client.chat.completions.create", dummy_create)
-
-    response = get_response(test_message)
-    assert response == "Ini response dari DeepSeek API..."
+    # Panggil dengan pesan yang tidak ada keyword booking
+    res = get_response("Tolong informasikan jadwal UGD", session_id="sess2")
+    assert res == "Dummy RAG reply"

@@ -204,10 +204,3 @@ Berikut struktur utama direktori proyek:
           }
 
     - Status code `200`, response mengandung `"appointment_id"`.
-
----
-
-## 8. Kontak
-
-- **Nama**: Muhammad Nuril Huda
-- **Email**: muhammadnurilhuda@mail.ugm.ac.id
